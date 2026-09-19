@@ -1,0 +1,71 @@
+{
+  "receipt_id": "rcpt-7992ed268c4f",
+  "deployment_id": "deploy-797ccb8a",
+  "timestamp": "2026-09-19T04:26:07.186636+00:00",
+  "test_type": "canary-interception",
+  "detector_version": "1.0.1",
+  "control_id": "HCG-DP-001",
+  "passed": true,
+  "interception_confirmed": true,
+  "external_transmission_confirmed": false,
+  "fail_closed_enabled": true,
+  "false_positive_rate": 0.02,
+  "false_negative_rate": 0.0,
+  "total_cases": 7,
+  "cases_passed": 7,
+  "unauthorized_destinations": [],
+  "canary_results": [
+    {
+      "pattern_id": "ssn-pattern-type-1",
+      "category": "ssn",
+      "intercepted": true,
+      "external_transmission_confirmed": false,
+      "passed": true
+    },
+    {
+      "pattern_id": "mrn-pattern-type-1",
+      "category": "mrn",
+      "intercepted": true,
+      "external_transmission_confirmed": false,
+      "passed": true
+    },
+    {
+      "pattern_id": "email-pattern-type-1",
+      "category": "email",
+      "intercepted": true,
+      "external_transmission_confirmed": false,
+      "passed": true
+    },
+    {
+      "pattern_id": "phone-pattern-type-1",
+      "category": "phone",
+      "intercepted": true,
+      "external_transmission_confirmed": false,
+      "passed": true
+    },
+    {
+      "pattern_id": "dob-pattern-type-1",
+      "category": "date",
+      "intercepted": true,
+      "external_transmission_confirmed": false,
+      "passed": true
+    },
+    {
+      "pattern_id": "ssn-base64-encoded",
+      "category": "ssn-encoded",
+      "intercepted": true,
+      "external_transmission_confirmed": false,
+      "passed": true
+    },
+    {
+      "pattern_id": "ssn-split-fields",
+      "category": "ssn-split",
+      "intercepted": true,
+      "external_transmission_confirmed": false,
+      "passed": true
+    }
+  ],
+  "prior_record_hash": "65d40d0f47388425e3431b913397ac91f07900d84b065ca64147d644cecaaf88",
+  "artifact_hash": "sha256:26fb1d54a30203c16d049b48e8f2af20f6858cb21b010cdfe099ffdb75d86852",
+  "hmac_signature": "hmac-sha256:c0295823daa91832fff0590ec402676fb86b864c5fb24da16f2f06fb9d3d0224"
+}

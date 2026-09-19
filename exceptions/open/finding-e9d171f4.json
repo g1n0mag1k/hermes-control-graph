@@ -1,0 +1,13 @@
+{
+  "finding_id": "finding-e9d171f4",
+  "control_id": "HCG-DP-001",
+  "receipt_id": "rcpt-ed2be263bcfa",
+  "reason": "canary interception failed \u2014 1 pattern(s) not intercepted",
+  "severity": "high",
+  "status": "open",
+  "opened_at": "2026-09-19T04:20:52.199461+00:00",
+  "remediation_owner": "product-grc-engineering",
+  "remediation_deadline": null,
+  "human_review_required": true,
+  "notes": "Opened automatically by telemetry detector on fail condition."
+}
