@@ -1,0 +1,234 @@
+# Evidence Dictionary — HCG-DP-001
+# Defines exactly what evidence proves the control is operating
+# Version: 1.0.0
+# Status: human-approved
+# Last Updated: 2026-09-19
+# Author: Andrew Rogers
+# Disclaimer: This evidence dictionary is illustrative. It requires
+# qualified assessor review before use in a certification or audit program.
+
+evidence_dictionary:
+  control_id: HCG-DP-001
+  control_name: Sensitive Information Telemetry Boundary
+  version: 1.0.0
+  status: human-approved
+  last_updated: 2026-09-19
+  author: Andrew Rogers
+  reviewer: Andrew Rogers
+
+  evidence_records:
+
+    - evidence_id: EVD-001
+      name: phi_detection_test_results
+      description: >
+        Output of the deterministic PHI detection test runner confirming
+        that synthetic PHI patterns were intercepted before external
+        transmission. Produced on every release.
+      source: hermes_relay_test_runner
+      format: json
+      frequency: per-release
+      retention_period: 3-years
+      required_fields:
+        - field: test_run_id
+          type: string
+          description: Unique identifier for this test run
+          example: "trun-2026-09-19-001"
+        - field: detector_version
+          type: string
+          description: Version of the detection layer under test
+          example: "1.4.2"
+        - field: timestamp
+          type: iso8601
+          description: UTC timestamp of test execution
+          example: "2026-09-19T14:32:00Z"
+        - field: passed
+          type: boolean
+          description: True if all synthetic PHI was intercepted
+          example: true
+        - field: total_cases
+          type: integer
+          description: Total number of synthetic PHI patterns tested
+          example: 47
+        - field: cases_passed
+          type: integer
+          description: Number of patterns successfully intercepted
+          example: 47
+        - field: false_positive_rate
+          type: float
+          description: Rate at which non-sensitive data was incorrectly flagged
+          example: 0.02
+        - field: false_negative_rate
+          type: float
+          description: Rate at which sensitive data was not intercepted
+          example: 0.00
+        - field: identifier_categories_tested
+          type: array
+          description: List of HIPAA Safe Harbor identifier categories tested
+          example: ["name","date","phone","email","ssn","mrn","ip-address"]
+        - field: artifact_hash
+          type: string
+          description: SHA-256 hash of this evidence record
+          example: "a3f9c2..."
+        - field: prior_record_hash
+          type: string
+          description: SHA-256 hash of the previous evidence record — chain link
+          example: "b7e1d4..."
+      collection_method: automated
+      collection_owner: engineering
+      review_owner: product-grc
+      pass_condition: passed == true AND false_negative_rate == 0.00
+      fail_condition: passed == false OR false_negative_rate > 0.00
+      fail_action: block-release and open exception workflow
+
+    - evidence_id: EVD-002
+      name: telemetry_gateway_configuration
+      description: >
+        Current configuration state of the telemetry gateway confirming
+        fail-closed mode is active and the authorized destination is correct.
+        Collected daily via API.
+      source: azure_api
+      format: json
+      frequency: daily
+      retention_period: 3-years
+      required_fields:
+        - field: configuration_id
+          type: string
+          description: Unique identifier for this configuration snapshot
+          example: "cfg-2026-09-19-001"
+        - field: collected_at
+          type: iso8601
+          description: UTC timestamp of configuration collection
+          example: "2026-09-19T00:05:00Z"
+        - field: fail_closed_enabled
+          type: boolean
+          description: True if the gateway blocks telemetry when detection is unavailable
+          example: true
+        - field: outbound_destination
+          type: string
+          description: Authorized telemetry destination endpoint
+          example: "https://telemetry.internal.hermesrelay.dev"
+        - field: unauthorized_destinations
+          type: array
+          description: List of blocked external destinations confirmed unreachable
+          example: []
+        - field: configuration_version
+          type: string
+          description: Version of the gateway configuration
+          example: "2.1.0"
+        - field: artifact_hash
+          type: string
+          description: SHA-256 hash of this configuration snapshot
+          example: "c8a2f1..."
+        - field: prior_record_hash
+          type: string
+          description: SHA-256 hash of the previous configuration snapshot
+          example: "d4b9e3..."
+      collection_method: automated
+      collection_owner: engineering
+      review_owner: product-grc
+      pass_condition: fail_closed_enabled == true AND unauthorized_destinations == []
+      fail_condition: fail_closed_enabled == false OR unauthorized_destinations != []
+      fail_action: immediate alert and open exception workflow
+
+    - evidence_id: EVD-003
+      name: canary_interception_receipt
+      description: >
+        Hash-chained signed receipt confirming that a synthetic PHI canary
+        was injected into the telemetry pipeline and intercepted before
+        reaching any external destination. Produced on every deployment.
+      source: hermes_relay_canary_runner
+      format: json-hash-chained
+      frequency: per-deployment
+      retention_period: 3-years
+      required_fields:
+        - field: receipt_id
+          type: string
+          description: Unique identifier for this canary receipt
+          example: "rcpt-2026-09-19-deploy-001"
+        - field: deployment_id
+          type: string
+          description: Identifier of the deployment that triggered this canary run
+          example: "deploy-2026-09-19-001"
+        - field: timestamp
+          type: iso8601
+          description: UTC timestamp of canary injection
+          example: "2026-09-19T15:00:00Z"
+        - field: canary_pattern
+          type: string
+          description: Type of synthetic PHI pattern injected — not the actual value
+          example: "ssn-pattern-type-3"
+        - field: interception_confirmed
+          type: boolean
+          description: True if the canary was intercepted before external transmission
+          example: true
+        - field: interception_point
+          type: string
+          description: The system component that intercepted the canary
+          example: "hermes-relay-gateway-v1.4.2"
+        - field: external_transmission_confirmed
+          type: boolean
+          description: Must be false — true means the control failed
+          example: false
+        - field: artifact_hash
+          type: string
+          description: SHA-256 hash of this receipt
+          example: "e5c3a7..."
+        - field: prior_record_hash
+          type: string
+          description: SHA-256 hash of the previous canary receipt
+          example: "f2d8b1..."
+        - field: hmac_signature
+          type: string
+          description: HMAC signature over the receipt content
+          example: "g9e4c2..."
+      collection_method: automated
+      collection_owner: engineering
+      review_owner: product-grc
+      pass_condition: interception_confirmed == true AND external_transmission_confirmed == false
+      fail_condition: interception_confirmed == false OR external_transmission_confirmed == true
+      fail_action: block-deployment and open exception workflow immediately
+
+    - evidence_id: EVD-004
+      name: coverage_review_log
+      description: >
+        Human-reviewed log confirming that detection coverage was assessed
+        against all identifier categories in scope for this release.
+        Produced per release by the control owner.
+      source: manual-review
+      format: markdown
+      frequency: per-release
+      retention_period: 3-years
+      required_fields:
+        - field: review_id
+          type: string
+          description: Unique identifier for this coverage review
+          example: "cov-review-2026-09-19-001"
+        - field: release_version
+          type: string
+          description: Version of the release being reviewed
+          example: "1.4.2"
+        - field: review_date
+          type: iso8601
+          description: Date of coverage review
+          example: "2026-09-19"
+        - field: reviewer
+          type: string
+          description: Name of the human reviewer
+          example: "Andrew Rogers"
+        - field: categories_reviewed
+          type: array
+          description: All identifier categories confirmed in coverage scope
+          example: ["name","date","phone","fax","email","ssn","mrn","account-number","certificate-number","url","ip-address","device-identifier","biometric"]
+        - field: categories_with_gaps
+          type: array
+          description: Any categories not yet covered — must be empty for pass
+          example: []
+        - field: coverage_passed
+          type: boolean
+          description: True if all required categories are covered with no gaps
+          example: true
+        - field: notes
+          type: string
+          description: Any reviewer observations or follow-up items
+          example: "All 16 of 18 HIPAA Safe Harbor categories confirmed in scope. Geographic and age categories excluded by design — see exception EVD-004-EXC-001."
+      collection_method:
