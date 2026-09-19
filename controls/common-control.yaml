@@ -1,0 +1,185 @@
+# HCG-DP-001 — Sensitive Information Telemetry Boundary
+# Machine-readable canonical control record
+# Version: 1.0.0
+# Status: human-approved
+# Last Updated: 2026-09-19
+# Author: Andrew Rogers
+# Disclaimer: This control definition is illustrative. It requires
+# qualified assessor review before use in a certification or audit program.
+
+control:
+  id: HCG-DP-001
+  name: Sensitive Information Telemetry Boundary
+  version: 1.0.0
+  status: human-approved
+  created: 2026-09-19
+  last_updated: 2026-09-19
+  author: Andrew Rogers
+  reviewer: Andrew Rogers
+
+  objective: >
+    Sensitive information must be detected and prevented from entering
+    unauthorized logs, telemetry systems, or external processing services
+    at all times — including during development, testing, staging, and
+    production operations.
+
+  risk: >
+    Application telemetry, observability pipelines, and log aggregation
+    services routinely capture full request and response payloads. Without
+    an active boundary control, protected health information, personally
+    identifiable information, and other sensitive identifiers can be
+    transmitted to external processors, retained in plaintext logs, and
+    exposed during vendor access, audit, or breach investigation.
+
+  family: data-protection
+  type:
+    - preventive
+    - detective
+  method: automated
+  owner: product-grc-engineering
+  review_frequency:
+    - per-release
+    - quarterly
+
+  applicability:
+    - systems that process, transmit, or store sensitive information
+    - systems that emit logs, traces, metrics, or telemetry to an external destination
+    - systems that integrate with third-party observability, monitoring, or analytics platforms
+
+  sensitive_information_in_scope:
+    - category: PHI
+      reference: HIPAA 45 CFR § 164.304
+      description: Protected health information as defined under HIPAA
+    - category: PII
+      description: >
+        Names, addresses, dates of birth, Social Security numbers,
+        financial account numbers, and government-issued identifiers
+    - category: credentials
+      description: Passwords, tokens, and API keys
+    - category: indirect-identifiers
+      description: >
+        Any identifier that could be used alone or in combination
+        to identify an individual
+
+  implementation_guidance:
+    - step: 1
+      action: >
+        Deploy a deterministic detection layer at every telemetry egress
+        point before data leaves the application boundary
+    - step: 2
+      action: >
+        Configure the detection layer to operate fail-closed — if detection
+        is unavailable, telemetry must be blocked, not passed through
+    - step: 3
+      action: >
+        Run synthetic canary identifiers through the pipeline on every
+        deployment to verify the boundary is active
+    - step: 4
+      action: >
+        Produce a signed, hash-chained evidence receipt for every detection
+        run confirming pass or fail status
+    - step: 5
+      action: >
+        Log all detection events locally without transmitting sensitive
+        content to external systems
+    - step: 6
+      action: >
+        Review detection coverage against the full identifier category
+        list on every release
+
+  test_methods:
+    - id: TM-001
+      type: synthetic-canary
+      description: >
+        Inject known PHI patterns and verify interception before
+        external transmission
+      frequency: per-deployment
+    - id: TM-002
+      type: configuration-audit
+      description: >
+        Verify fail-closed setting is active and destination is authorized
+      frequency: daily
+    - id: TM-003
+      type: coverage-review
+      description: >
+        Confirm detection covers all identifier categories in scope
+      frequency: per-release
+    - id: TM-004
+      type: adversarial-probe
+      description: >
+        Attempt bypass using encoded, split, and malformed identifiers
+      frequency: quarterly
+
+  required_evidence:
+    - evidence_id: EVD-001
+      name: phi_detection_test_results
+      format: json
+      frequency: per-release
+    - evidence_id: EVD-002
+      name: telemetry_gateway_configuration
+      format: json
+      frequency: daily
+    - evidence_id: EVD-003
+      name: canary_interception_receipt
+      format: json-hash-chained
+      frequency: per-deployment
+    - evidence_id: EVD-004
+      name: coverage_review_log
+      format: markdown
+      frequency: per-release
+
+  exceptions:
+    requirements:
+      - documented business justification
+      - approval from control owner
+      - compensating control or time-bound remediation plan
+      - poam record in exceptions workflow
+      - re-evaluation within 30 days or next release cycle
+    permanent_exceptions_allowed: false
+
+  framework_mappings:
+    - framework: HIPAA
+      version: 45 CFR Parts 160 and 164
+      identifiers:
+        - 164.312(a)(2)(iv)
+        - 164.312(e)(2)(ii)
+      confidence: high
+      mapping_file: mappings/crosswalk.csv
+    - framework: SOC2
+      version: AICPA TSC 2017
+      identifiers:
+        - CC6.1
+        - CC6.7
+        - CC7.2
+      confidence: medium-high
+      mapping_file: mappings/crosswalk.csv
+    - framework: ISO27001
+      version: ISO/IEC 27001:2022
+      identifiers:
+        - A.8.12
+        - A.8.15
+        - A.8.16
+      confidence: medium-high
+      mapping_file: mappings/crosswalk.csv
+    - framework: NIST-CSF
+      version: 2.0
+      identifiers:
+        - PR.DS-1
+        - PR.DS-2
+        - DE.CM-1
+      confidence: high
+      mapping_file: mappings/crosswalk.csv
+    - framework: NIST-SP-800-53
+      version: Revision 5
+      identifiers:
+        - AC-4
+        - AU-3
+        - SI-12
+      confidence: medium-high
+      mapping_file: mappings/crosswalk.csv
+
+  version_history:
+    - version: 1.0.0
+      date: 2026-09-19
+      author: Andrew Rogers
+      change: Initial control definition
